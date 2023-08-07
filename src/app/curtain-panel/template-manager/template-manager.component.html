@@ -1,0 +1,2 @@
+<templates *ngIf="isTemplates" (edited)="edit($event)"/>
+<template-editor *ngIf="isEditor" [template]="template" [oldName]="oldName" (cancelled)="cancelEdit()" (saved)="saveEdit($event)"/>

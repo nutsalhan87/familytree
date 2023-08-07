@@ -1,0 +1,11 @@
+<button class="btn btn-primary" (click)="addProperty()">Добавить свойство</button>
+<input type="text" class="form-control" [class.is-invalid]="!isNameValid" (ngModelChange)="validateName($event)" placeholder="Название" [(ngModel)]="template.name"/>
+<div class="invalid-feedback">Введите название шаблона</div>
+<div *ngFor="let property of template.properties; let i = index; trackBy:trackByIndex" class="input-group">
+    <input class="form-control" [(ngModel)]="template.properties[i]"/>
+    <button class="btn btn-danger" (click)="removeProperty(i)">Убрать</button>
+</div>
+<div id="decision-panel">
+    <button class="btn btn-outline-danger" (click)="cancel()">Отмена</button>
+    <button class="btn btn-success" (click)="save()">Сохранить</button>
+</div>

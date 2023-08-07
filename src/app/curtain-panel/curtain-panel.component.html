@@ -1,0 +1,5 @@
+<div id="curtain" (click)="closed.emit()"></div>
+<div id="panel" class="shadow bg-body">
+    <template-manager *ngIf="content == CurtainPanelContent.TemplateManager"></template-manager>
+    <gen-editor *ngIf="content == CurtainPanelContent.GenEditor"></gen-editor>
+</div>

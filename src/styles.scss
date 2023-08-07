@@ -1,0 +1,79 @@
+$enable-shadows: true;
+$color-mode-type: media-query;
+$accordion-button-focus-box-shadow: none;
+@import '/node_modules/bootstrap/scss/bootstrap.scss';
+@import '/node_modules/@swimlane/ngx-datatable/index.scss';
+@import '/node_modules/@swimlane/ngx-datatable/themes/bootstrap.scss';
+@import '/node_modules/@swimlane/ngx-datatable/assets/icons.css';
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url(./assets/montserrat.ttf);
+}
+
+#familytree {
+  font-size: x-large;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+}
+
+body {
+  font-family: 'Montserrat';
+}
+
+curtain-panel {
+  position: fixed;
+  top: 0;
+
+  #curtain {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background-color: #00000060;
+  }
+
+  #panel {
+    --w: 800px;
+    --h: 600px;
+    position: fixed;
+    left: calc(50vw - var(--w) / 2);
+    top: calc(50vh - var(--h) / 2);
+    width: var(--w);
+    height: var(--h);
+    border-radius: 15px;
+  }
+}
+
+templates {
+
+  #control {
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+    margin: 15px;
+  }
+
+  #content {
+    width: 100%;
+    height: 100%;
+    overflow-y: scroll;
+  }
+}
+
+template-editor {
+  display: grid;
+  row-gap: 10px;
+  padding: 15px;
+  overflow-y: scroll;
+  max-height: 100%;
+
+  #decision-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 10px;
+  }
+}
+
+relational {
+  user-select: none;
+}
