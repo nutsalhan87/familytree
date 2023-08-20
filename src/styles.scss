@@ -2,9 +2,6 @@ $enable-shadows: true;
 $color-mode-type: media-query;
 $accordion-button-focus-box-shadow: none;
 @import '/node_modules/bootstrap/scss/bootstrap.scss';
-@import '/node_modules/@swimlane/ngx-datatable/index.scss';
-@import '/node_modules/@swimlane/ngx-datatable/themes/bootstrap.scss';
-@import '/node_modules/@swimlane/ngx-datatable/assets/icons.css';
 
 @font-face {
   font-family: 'Montserrat';
@@ -67,13 +64,74 @@ template-editor {
   overflow-y: scroll;
   max-height: 100%;
 
-  #decision-panel {
+  #template-decision-panel {
     display: grid;
     grid-template-columns: 1fr 1fr;
     column-gap: 10px;
   }
 }
 
+gen-editor {
+  display: grid;
+  row-gap: 10px;
+  padding: 15px;
+  overflow-y: scroll;
+  max-height: 100%;
+
+  #id-input {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 10px;
+  }
+
+  #gen-information {
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+    margin-top: 15px;
+  }
+
+  #gen-relations {
+    display: flex;
+    align-items: center;
+    column-gap: 15px;
+    margin-top: 15px;
+  }
+
+  #gen-decision-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 10px;
+    margin-top: 15px;
+  }
+}
+
+gen-info {
+  display: grid;
+  row-gap: 30px;
+  padding: 15px;
+  overflow-y: scroll;
+  max-height: 100%;
+
+  #id-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  #info-information {
+    display: grid;
+  }
+
+  #info-relations {
+    display: grid;
+  }
+}
+
 relational {
   user-select: none;
+
+  td, th {
+    max-width: 20vw;
+    overflow-x: scroll;
+  }
 }

@@ -52,10 +52,10 @@ impl GenService {
             gen.add_information(&[("Имя", "Женя"), ("Работа", "Врач")]);
             gen
         };
-        gen_data.add_gen(me);
-        gen_data.add_gen(mother);
-        gen_data.add_gen(father);
-        gen_data.add_gen(sister);
+        gen_data.save_gen(me);
+        gen_data.save_gen(mother);
+        gen_data.save_gen(father);
+        gen_data.save_gen(sister);
         gen_data.save_template("Шаблон1", HashSet::from(["A1".to_string(), "B".to_string(), "K2".to_string(), "C".to_string()]));
         gen_data.save_template("Шаблон2", HashSet::from(["A3.to_string(), L.to_string(), K0.to_string(), O.to_string(), I5.to_string(), PA3.to_string(), L.to_string(), K0.to_string(), O.to_string(), I5.to_string(), PA3.to_string(), L.to_string(), K0.to_string(), O.to_string(), I5.to_string(), P".to_string()]));
         gen_data.save_template("Шаблон3", HashSet::from(["U2".to_string(), "X".to_string()]));
@@ -68,8 +68,7 @@ impl GenService {
         let mut cols = HashSet::new();
         for gen in self.gen_data.gens() {
             cols.extend(gen.information().iter().map(|(col, _)| col.clone()));
-        }
-
+        };
         cols
     }
 }

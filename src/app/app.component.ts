@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ButtonClassPrimary, ButtonClassSuccess } from './util/button-class';
 import { CurtainPanelContent } from './curtain-panel/curtain-panel.component';
 
@@ -13,6 +13,7 @@ export class AppComponent {
     relationalButtonClass = new ButtonClassPrimary(true);
     graphButtonClass = new ButtonClassPrimary(false);
     curtainPanelContent = CurtainPanelContent.NoContent;
+    genId: number | undefined;
 
     constructor() {}
 
@@ -32,7 +33,8 @@ export class AppComponent {
         }
     }
 
-    switchGenEditor() {
+    switchGenEditor(id?: number) {
+        this.genId = id;
         this.genEditorButtonClass.switchClass();
         if (this.genEditorButtonClass.isActive) {
             this.templateManagerButtonClass.isActive = false;
@@ -50,5 +52,10 @@ export class AppComponent {
     navigateGraph() {
         this.relationalButtonClass.switchClass();
         this.graphButtonClass.switchClass();
+    }
+
+    showGenInfo(id: number) {
+        this.curtainPanelContent = CurtainPanelContent.GenInfo;
+        this.genId = id;
     }
 }

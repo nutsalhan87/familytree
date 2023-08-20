@@ -1,0 +1,24 @@
+<div id="id-info">
+    <div class="d-grid">
+        <span class="h3">ID</span>
+        <span class="display-6">{{ gen.id }}</span>
+    </div>
+    <div class="d-grid">
+        <span class="h3">ID Матери</span>
+        <span class="display-6">{{ gen.motherId }}</span>
+    </div>
+    <div class="d-grid">
+        <span class="h3">ID Отца</span>
+        <span class="display-6">{{ gen.fatherId }}</span>
+    </div>
+</div>
+<div id="info-information">
+    <span class="h3">Информация</span>
+    <span *ngIf="gen.information.length == 0" class="secondary-text">Ничего нет</span>
+    <span *ngFor="let info of gen.information" class="fs-5">{{ info[0] + ": " + info[1] }}</span>
+</div>
+<div id="info-relations">
+    <span class="h3">Отношения</span>
+    <span *ngIf="gen.relations.length == 0" class="secondary-text">Ничего нет</span>
+    <span *ngFor="let rels of gen.relations" class="fs-5">{{ rels[0] + ": " + rels[1].join(', ') }}</span>
+</div>

@@ -17,7 +17,7 @@ export class TemplateManagerComponent {
         this.isEditor = true;
         if (name) {
             this.oldName = name;
-            const properties = this.genService.templates.get(name);
+            const properties = Template.findProperties(name, this.genService.templates);
             if (!properties) {
                 this.template = { name: "", properties: [] };
                 return;

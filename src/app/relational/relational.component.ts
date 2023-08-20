@@ -1,28 +1,33 @@
-import { Component } from '@angular/core';
-import { GenService } from '../gen.service';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { Gen, GenService } from '../gen.service';
+import { } from '@floating-ui/dom';
 
 @Component({
     selector: 'relational',
     templateUrl: 'relational.component.html',
 })
 export class RelationalComponent {
-    cols: any[] = [];
-    gens: any[] = [];
+    @Output() edited = new EventEmitter<number>();
+    @Output() infoShowed = new EventEmitter<number>();
+    constructor(private genService: GenService) { }
 
-    constructor(private genService: GenService) {
-        setTimeout(this.updateTable.bind(this), 150);
+    get cols() {
+        return this.genService.cols.sort();
+    }
+
+    get gens() {
+        return this.genService.gens.sort((a: Gen, b: Gen) => a.id - b.id);
+    }
+
+    edit(id: number) {
+        this.edited.emit(id);
+    }
+
+    info(id: number) {
+        this.infoShowed.emit(id);
     }
     
-    updateTable() {
-        this.cols = [{ name: "ID", prop: "ID" }, { name: "ID Матери", prop: "ID Матери" }, { name: "ID Отца", prop: "ID Отца" }]
-            .concat(this.genService.cols.map((val) => { return { name: val, prop: val } }));
-        
-        let mapped: any[] = [];
-        for (let gen of this.genService.gens) {
-            let newRow: any = { "ID": gen.id, "ID Матери": gen.motherId, "ID Отца": gen.fatherId };
-            gen.information.forEach((value: string, key: string) => { newRow[key] = value; });
-            mapped.push(newRow);
-        }
-        this.gens = mapped;
+    delete(id: number) {
+        this.genService.deleteGen(id);
     }
 }

@@ -25,9 +25,13 @@ impl GenData {
         &self.templates
     }
 
-    pub fn add_gen(&mut self, new_gen: Gen) -> Result<(), String> {
+    pub fn save_gen(&mut self, new_gen: Gen) -> Result<(), String> {
         match self.gens.iter().find(|gen| gen.id == new_gen.id) {
-            Some(_) => Err("There is someone with the same id".to_string()),
+            Some(gen) => {
+                self.delete_gen(gen.id);
+                self.gens.push(new_gen);
+                Ok(())
+            }
             None => {
                 self.gens.push(new_gen);
                 Ok(())
@@ -35,18 +39,7 @@ impl GenData {
         }
     }
 
-    pub fn update_gen(&mut self, new_gen: Gen) -> Result<(), String> {
-        match self.gens.iter().find(|gen| gen.id == new_gen.id) {
-            Some(gen) => {
-                self.remove_gen(gen.id);
-                self.add_gen(new_gen);
-                Ok(())
-            }
-            None => Err("There is noone with this id".to_string()),
-        }
-    }
-
-    pub fn remove_gen(&mut self, id: u32) -> Result<(), String> {
+    pub fn delete_gen(&mut self, id: u32) -> Result<(), String> {
         self.gens.retain(|val| val.id != id);
         Ok(())
     }

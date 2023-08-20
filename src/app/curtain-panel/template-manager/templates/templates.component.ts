@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from "@angular/core";
-import { GenService } from "src/app/gen.service";
+import { GenService, Template } from "src/app/gen.service";
 
 @Component({
     selector: 'templates',
@@ -9,8 +9,8 @@ export class TemplatesComponent {
     @Output() edited: EventEmitter<string> = new EventEmitter<string>();
     constructor(private genService: GenService) { }
 
-    get templates(): [string, string[]][] {
-        return Array.from(this.genService.templates.entries());
+    get templates(): Template[] {
+        return this.genService.templates;
     }
 
     newTemplate() {
