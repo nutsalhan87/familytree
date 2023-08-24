@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "familytree",
-    "version": "0.0.0"
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -18,8 +18,11 @@
         "ask": false,
         "confirm": false,
         "message": true,
-        "open": false,
-        "save": false
+        "open": true,
+        "save": true
+      },
+      "globalShortcut": {
+        "all": true
       }
     },
     "bundle": {
@@ -32,18 +35,40 @@
         "icons/128x128@2x.png",
         "icons/icon.icns",
         "icons/icon.ico"
-      ]
+      ],
+      "category": "Utility",
+      "shortDescription": "Программа для построения семейного древа",
+      "macOS": {
+        "license": "../LICENSE"
+      },
+      "windows": {
+        "digestAlgorithm": "SHA-256",
+        "allowDowngrades": true,
+        "webviewInstallMode": {
+          "silent": true,
+          "type": "embedBootstrapper"
+        },
+        "wix": {
+          "language": [ "ru-RU", "en-US"],
+          "license": "../License.rtf"
+        },
+        "nsis": {
+          "license": "../LICENSE",
+          "installerIcon": "icons/icon.png",
+          "displayLanguageSelector": true,
+          "installMode": "both"
+        }
+      }
     },
     "security": {
       "csp": null
     },
     "windows": [
       {
-        "fullscreen": false,
-        "resizable": true,
-        "title": "familytree",
-        "width": 800,
-        "height": 600
+        "label": "main",
+        "width": 1200,
+        "height": 900,
+        "title": "Familytree"
       }
     ]
   }

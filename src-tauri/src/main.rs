@@ -3,13 +3,10 @@
 
 mod gen_service;
 
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Mutex,
-};
+use std::collections::{HashMap, HashSet};
 
 use gen_service::*;
-use tauri::State;
+use tauri::{CustomMenuItem, Manager, Menu, MenuItem, State, Submenu};
 
 #[tauri::command]
 fn message(window: tauri::Window, title: &str, msg: &str) -> Result<(), String> {
@@ -18,16 +15,14 @@ fn message(window: tauri::Window, title: &str, msg: &str) -> Result<(), String> 
 }
 
 #[tauri::command]
-fn cols(gen_serv: State<Mutex<GenService>>) -> Result<HashSet<String>, String> {
-    Ok(gen_serv
-        .lock()
-        .map_err(|err| err.to_string())?
-        .information_columns())
+fn cols(gen_serv: State<GenService>) -> Result<HashSet<String>, String> {
+    Ok(gen_serv.information_columns())
 }
 
 #[tauri::command]
-fn gens(gen_serv: State<Mutex<GenService>>) -> Result<Vec<Gen>, String> {
+fn gens(gen_serv: State<GenService>) -> Result<Vec<Gen>, String> {
     Ok(gen_serv
+        .inner
         .lock()
         .map_err(|err| err.to_string())?
         .gen_data
@@ -36,9 +31,9 @@ fn gens(gen_serv: State<Mutex<GenService>>) -> Result<Vec<Gen>, String> {
 }
 
 #[tauri::command]
-fn save_gen(gen_serv: State<Mutex<GenService>>, gen: Gen) -> Result<(), String> {
-    println!("{:?}", gen);
+fn save_gen(gen_serv: State<GenService>, gen: Gen) -> Result<(), String> {
     gen_serv
+        .inner
         .lock()
         .map_err(|err| err.to_string())?
         .gen_data
@@ -46,8 +41,9 @@ fn save_gen(gen_serv: State<Mutex<GenService>>, gen: Gen) -> Result<(), String> 
 }
 
 #[tauri::command]
-fn delete_gen(gen_serv: State<Mutex<GenService>>, id: u32) -> Result<(), String> {
+fn delete_gen(gen_serv: State<GenService>, id: u32) -> Result<(), String> {
     gen_serv
+        .inner
         .lock()
         .map_err(|err| err.to_string())?
         .gen_data
@@ -55,21 +51,24 @@ fn delete_gen(gen_serv: State<Mutex<GenService>>, id: u32) -> Result<(), String>
 }
 
 #[tauri::command]
-fn templates(
-    gen_serv: State<Mutex<GenService>>,
-) -> Result<HashMap<String, HashSet<String>>, String> {
-    let binding = gen_serv.lock().map_err(|err| err.to_string())?;
-    let templates = binding.gen_data.templates();
-    Ok(templates.clone())
+fn templates(gen_serv: State<GenService>) -> Result<HashMap<String, HashSet<String>>, String> {
+    Ok(gen_serv
+        .inner
+        .lock()
+        .map_err(|err| err.to_string())?
+        .gen_data
+        .templates()
+        .clone())
 }
 
 #[tauri::command]
 fn save_template(
-    gen_serv: State<Mutex<GenService>>,
+    gen_serv: State<GenService>,
     name: String,
     properties: HashSet<String>,
 ) -> Result<(), String> {
     gen_serv
+        .inner
         .lock()
         .map_err(|err| err.to_string())?
         .gen_data
@@ -77,8 +76,9 @@ fn save_template(
 }
 
 #[tauri::command]
-fn delete_template(gen_serv: State<Mutex<GenService>>, name: String) -> Result<(), String> {
+fn delete_template(gen_serv: State<GenService>, name: String) -> Result<(), String> {
     gen_serv
+        .inner
         .lock()
         .map_err(|err| err.to_string())?
         .gen_data
@@ -87,7 +87,7 @@ fn delete_template(gen_serv: State<Mutex<GenService>>, name: String) -> Result<(
 
 fn main() {
     tauri::Builder::default()
-        .manage(Mutex::new(GenService::fake()))
+        .manage(GenService::new())
         .invoke_handler(tauri::generate_handler![
             message,
             cols,
@@ -98,6 +98,41 @@ fn main() {
             save_template,
             delete_template
         ])
+        .menu({
+            let menu = Menu::new();
+            let open = CustomMenuItem::new("open", "Открыть").accelerator("ctrl + O");
+            let sep = MenuItem::Separator;
+            let save = CustomMenuItem::new("save", "Сохранить").accelerator("ctrl + S");
+            let save_as =
+                CustomMenuItem::new("save_as", "Сохранить как...").accelerator("ctrl + shift + S");
+            let submenu = Submenu::new(
+                "Файл",
+                Menu::new()
+                    .add_item(open)
+                    .add_native_item(sep)
+                    .add_item(save)
+                    .add_item(save_as),
+            );
+            menu.add_submenu(submenu)
+        })
+        .on_menu_event(|event| {
+            let window = event.window().clone();
+            let gen_serv = event.window().state::<GenService>();
+            match event.menu_item_id() {
+                "open" => {
+                    gen_serv.open(move || {
+                        window.emit("file_opened", ()).unwrap();
+                    });
+                }
+                "save" => {
+                    gen_serv.save();
+                }
+                "save_as" => {
+                    gen_serv.save_as();
+                }
+                _ => (),
+            }
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

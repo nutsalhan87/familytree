@@ -1,4 +1,5 @@
-import { invoke } from '@tauri-apps/api'
+import { invoke } from '@tauri-apps/api';
+import { listen } from '@tauri-apps/api/event';
 
 export class Gen {
     id: number = 0;
@@ -47,10 +48,9 @@ export class GenService {
     private _gens: Gen[] = [];
     private _templates: Template[] = [];
 
-    constructor() {
-        this.updateCols();
-        this.updateGens();
-        this.updateTemplates();
+    public constructor() {
+        this.updateAll();
+        listen('file_opened', () => { this.updateAll(); })
     }
 
     public get cols(): string[] {
@@ -186,5 +186,12 @@ export class GenService {
             },
             (err) => { console.log(err); }
         );
+    }
+
+    updateAll() {
+        this.updateCols();
+        this.updateGens();
+        this.updateTemplates();
+
     }
 }

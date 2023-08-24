@@ -2,5 +2,5 @@
 <div id="panel" class="shadow bg-body">
     <template-manager *ngIf="content == CurtainPanelContent.TemplateManager"></template-manager>
     <gen-editor *ngIf="content == CurtainPanelContent.GenEditor" (cancelled)="close()" [id]="genId"></gen-editor>
-    <gen-info *ngIf="content == CurtainPanelContent.GenInfo" [id]="genId"></gen-info>
+    <gen-info *ngIf="content == CurtainPanelContent.GenInfo" (closed)="close()" [id]="genId"></gen-info>
 </div>

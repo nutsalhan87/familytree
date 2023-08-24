@@ -1,88 +1,117 @@
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    fs::{self, File},
+    io::BufReader,
+    sync::{Arc, Mutex},
+};
+
+use tauri::{api::dialog::FileDialogBuilder, Window};
 
 mod gen;
 mod gen_data;
 
-pub use {gen_data::GenData, gen::Gen};
+pub use {gen::Gen, gen_data::GenData};
 
-pub struct GenService {
+pub struct GenServiceInner {
     pub gen_data: GenData,
     file_path: Option<String>,
+}
+
+pub struct GenService {
+    pub inner: Arc<Mutex<GenServiceInner>>,
 }
 
 impl GenService {
     pub fn new() -> GenService {
         GenService {
-            gen_data: GenData::new(),
-            file_path: None,
-        }
-    }
-
-    pub fn fake() -> GenService {
-        let mut gen_data = GenData::new();
-        let me = {
-            let mut gen = Gen::new();
-            gen.id = 1;
-            gen.father_id = Some(2);
-            gen.mother_id = Some(3);
-            gen.add_information(&[("Имя", "Петя"), ("Отчество", "Петрович"), ("Работа", "Сварщик")]);
-            gen
-        };
-        let mother = {
-            let mut gen = Gen::new();
-            gen.id = 2;
-            gen.father_id = None;
-            gen.mother_id = None;
-            gen.add_information(&[("Имя", "Дженна Ортега"), ("Работа", "Актриса")]);
-            gen
-        };
-        let father = {
-            let mut gen = Gen::new();
-            gen.id = 3;
-            gen.father_id = None;
-            gen.mother_id = None;
-            gen.add_information(&[("Имя", "Петр"), ("Отчество", "Афанасьевич")]);
-            gen
-        };
-        let sister = {
-            let mut gen = Gen::new();
-            gen.id = 4;
-            gen.father_id = Some(2);
-            gen.mother_id = Some(3);
-            gen.add_information(&[("Имя", "Женя"), ("Работа", "Врач")]);
-            gen
-        };
-        gen_data.save_gen(me);
-        gen_data.save_gen(mother);
-        gen_data.save_gen(father);
-        gen_data.save_gen(sister);
-        gen_data.save_template("Шаблон1", HashSet::from(["A1".to_string(), "B".to_string(), "K2".to_string(), "C".to_string()]));
-        gen_data.save_template("Шаблон2", HashSet::from(["A3.to_string(), L.to_string(), K0.to_string(), O.to_string(), I5.to_string(), PA3.to_string(), L.to_string(), K0.to_string(), O.to_string(), I5.to_string(), PA3.to_string(), L.to_string(), K0.to_string(), O.to_string(), I5.to_string(), P".to_string()]));
-        gen_data.save_template("Шаблон3", HashSet::from(["U2".to_string(), "X".to_string()]));
-        GenService {
-            gen_data, file_path: None
+            inner: Arc::new(Mutex::new(GenServiceInner {
+                gen_data: GenData::new(),
+                file_path: None,
+            })),
         }
     }
 
     pub fn information_columns(&self) -> HashSet<String> {
         let mut cols = HashSet::new();
-        for gen in self.gen_data.gens() {
+        for gen in self.inner.lock().unwrap().gen_data.gens() {
             cols.extend(gen.information().iter().map(|(col, _)| col.clone()));
-        };
+        }
         cols
     }
-}
 
-#[cfg(test)]
-mod test {
-    use std::error::Error;
+    pub fn save(&self) {
+        let gen_service = self.inner.lock().unwrap();
+        match &gen_service.file_path {
+            Some(file_path) => {
+                fs::write(
+                    file_path,
+                    serde_json::ser::to_string_pretty(&gen_service.gen_data).unwrap(),
+                )
+                .unwrap();
+            }
+            None => {
+                self.save_as();
+            }
+        }
+    }
 
-    use super::GenService;
+    pub fn save_as(&self) {
+        let self_copy = Arc::clone(&self.inner);
+        FileDialogBuilder::new()
+            .add_filter("JSON", &["json"])
+            .save_file(move |file_path| match file_path {
+                Some(file_path) => {
+                    let path = file_path.to_str().unwrap().to_string();
+                    if !path.ends_with(".json") {
+                        tauri::api::dialog::message(
+                            None::<&Window>,
+                            "Неверный формат",
+                            "Файл должен быть сохранен с раширением json.",
+                        );
+                    } else {
+                        let mut gen_service = self_copy.lock().unwrap();
+                        gen_service.file_path = Some(path);
+                        fs::write(
+                            file_path,
+                            serde_json::ser::to_string_pretty(&gen_service.gen_data).unwrap(),
+                        )
+                        .unwrap();
+                    }
+                }
+                None => (),
+            });
+    }
 
-    #[test]
-    fn t1() -> Result<(), Box<dyn Error>> {
-        let gen_service = GenService::fake();
-        println!("{}", serde_json::ser::to_string_pretty(&gen_service.gen_data.templates())?);
-        Ok(())
+    pub fn open<F>(&self, handler: F)
+    where
+        F: FnOnce() + Send + Sync + 'static,
+    {
+        let self_copy = Arc::clone(&self.inner);
+        FileDialogBuilder::new()
+            .add_filter("JSON", &["json"])
+            .pick_file(move |file_path| match file_path {
+                Some(file_path) => {
+                    let path = file_path.to_str().unwrap().to_string();
+                    let gen_data = serde_json::de::from_reader::<_, GenData>(BufReader::new(
+                        File::open(&path).unwrap(),
+                    ));
+                    match gen_data {
+                        Ok(gen_data) => {
+                            let mut gen_service = self_copy.lock().unwrap();
+                            gen_service.gen_data = gen_data;
+                            gen_service.file_path = Some(path);
+                            handler();
+                        }
+                        Err(_) => {
+                            tauri::api::dialog::message(
+                                None::<&Window>,
+                                "Неверный формат",
+                                "Файл не является сохранением для данных программы.",
+                            );
+                        }
+                    }
+                }
+                None => (),
+            });
     }
 }

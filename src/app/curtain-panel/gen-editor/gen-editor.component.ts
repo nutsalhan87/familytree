@@ -64,7 +64,6 @@ export class GenEditorComponent implements OnInit {
     }
 
     validateMotherId(id: string) {
-        console.log(id != '');
         if (id != '' && (!this.isInt(id) || id == this.gen.fatherId || id == this.gen.id)) {
             this.isMotherIdValid = false;
         } else {

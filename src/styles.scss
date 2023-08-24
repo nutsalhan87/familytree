@@ -8,10 +8,23 @@ $accordion-button-focus-box-shadow: none;
   src: url(./assets/montserrat.ttf);
 }
 
+@mixin hide-scroll {
+  // &::-webkit-scrollbar {
+  //   display: none;
+  // }
+  // -ms-overflow-style: none;
+  // scrollbar-width: none;
+}
+
 #familytree {
   font-size: x-large;
   padding-left: 0.5em;
   padding-right: 0.5em;
+}
+
+.navbar-nav {
+  overflow-x: scroll;
+  @include hide-scroll();
 }
 
 body {
@@ -38,6 +51,15 @@ curtain-panel {
     width: var(--w);
     height: var(--h);
     border-radius: 15px;
+
+    @media screen and (max-width: 800px), (max-height: 720px) {
+      --t: 52px;
+      left: 0;
+      top: var(--t);
+      width: 100%;
+      height: calc(100% - var(--t));
+      border-radius: 0;
+    }
   }
 }
 
@@ -133,5 +155,14 @@ relational {
   td, th {
     max-width: 20vw;
     overflow-x: scroll;
+    @include hide-scroll();
   }
+
+  tr :first-child {
+    overflow-x: visible;
+  }
+}
+
+graph {
+  display: block;
 }
