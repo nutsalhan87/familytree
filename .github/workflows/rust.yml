@@ -26,6 +26,9 @@ jobs:
         with:
           node-version: 18
 
+      - name: npm install
+        run:  npm install
+
       - name: install Rust stable
         uses: actions-rs/toolchain@v1.0.6
         with:
