@@ -54,7 +54,7 @@
         },
         "nsis": {
           "license": "../LICENSE",
-          "installerIcon": "icons/icon.png",
+          "installerIcon": "icons/icon.ico",
           "displayLanguageSelector": true,
           "installMode": "both"
         }
