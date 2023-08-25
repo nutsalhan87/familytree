@@ -14,7 +14,7 @@ export class RelationalComponent {
     }
 
     get cols() {
-        return this.genService.cols.sort();
+        return this.genService.cols;
     }
 
     get gens() {

@@ -1,5 +1,5 @@
 use std::{
-    collections::HashSet,
+    collections::BTreeSet,
     fs::{self, File},
     io::BufReader,
     sync::{Arc, Mutex},
@@ -31,12 +31,12 @@ impl GenService {
         }
     }
 
-    pub fn information_columns(&self) -> HashSet<String> {
-        let mut cols = HashSet::new();
+    pub fn information_columns(&self) -> Vec<String> {
+        let mut cols = BTreeSet::new();
         for gen in self.inner.lock().unwrap().gen_data.gens() {
             cols.extend(gen.information().iter().map(|(col, _)| col.clone()));
         }
-        cols
+        cols.into_iter().collect()
     }
 
     pub fn save(&self) {

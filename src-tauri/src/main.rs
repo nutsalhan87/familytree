@@ -15,7 +15,7 @@ fn message(window: tauri::Window, title: &str, msg: &str) -> Result<(), String> 
 }
 
 #[tauri::command]
-fn cols(gen_serv: State<GenService>) -> Result<HashSet<String>, String> {
+fn cols(gen_serv: State<GenService>) -> Result<Vec<String>, String> {
     Ok(gen_serv.information_columns())
 }
 
