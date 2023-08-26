@@ -43,7 +43,6 @@ jobs:
       - uses: JonasKruckenberg/tauri-build@v1.3.0
         id: tauri_build
 
-      # The `artifacts` output can now be used by a different action to upload the artifacts
       - uses: actions/upload-artifact@v3
         with:
           name: artifacts
