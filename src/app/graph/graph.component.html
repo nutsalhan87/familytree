@@ -1,1 +1,6 @@
-<p class="text-center text-secondary display-5">Пока не реализовано</p>
+<div id="graph-control">
+    <button class="btn btn-primary" (click)="addCard()">Добавить карточку</button>
+    <button class="btn btn-success" (click)="clearCards()">Очистить холст</button>
+</div>
+<div *ngFor="let card of cards" class="card shadow-sm" mouseDraggable [(xCoordinate)]="card.x" [(yCoordinate)]="card.y"
+    [style.left.px]="card.x" [style.top.px]="card.y"></div>

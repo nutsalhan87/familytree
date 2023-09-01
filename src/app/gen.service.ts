@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api';
-import { listen } from '@tauri-apps/api/event';
+import { emit, listen } from '@tauri-apps/api/event';
+import { forkJoin } from 'rxjs';
 
 export class Gen {
     id: number = 0;
@@ -7,7 +8,7 @@ export class Gen {
     fatherId: number | undefined;
     information: [string, string][] = [];
     relations: [string, number[]][] = [];
-    constructor() {}
+    constructor() { }
 
     findInformation(findKey: string): string | undefined {
         const result = this.information.find(([key, value]: [string, string]) => key == findKey);
@@ -31,7 +32,7 @@ export class Gen {
 export class Template {
     name: string = "";
     properties: string[] = [];
-    constructor() {}
+    constructor() { }
 
     static findProperties(findKey: string, templates: Template[]): string[] | undefined {
         const result = templates.find((template: Template) => template.name == findKey);
@@ -50,7 +51,7 @@ export class GenService {
 
     public constructor() {
         this.updateAll();
-        listen('file_opened', () => { this.updateAll(); })
+        listen('gendata-updated', () => { this.updateAll(); })
     }
 
     public get cols(): string[] {
@@ -59,14 +60,16 @@ export class GenService {
 
     public updateCols() {
         invoke<string[]>('cols').then(
-            (res) => {
-                this._cols = res;
-                console.log(this.cols);
-            },
+            this.updateColsOnFulfilled.bind(this),
             (err) => {
                 console.log(err);
             }
         );
+    }
+
+    private updateColsOnFulfilled(res: string[]) {
+        this._cols = res;
+        console.log(this.cols);
     }
 
     public get gens(): Gen[] {
@@ -75,56 +78,55 @@ export class GenService {
 
     public updateGens() {
         invoke<any[]>('gens').then(
-            (res) => {
-                this._gens = [];
-                for (let gen of res) {
-                    let newGen = new Gen();
-                    newGen.id = gen.id;
-                    newGen.motherId = gen.motherId;
-                    newGen.fatherId = gen.fatherId;
-                    for (let informationColumn in gen.information) {
-                        newGen.information.push([informationColumn, gen.information[informationColumn]]);
-                    }
-                    for (let relationsColumn in gen.relations) {
-                        newGen.relations.push([relationsColumn, gen.relations[relationsColumn]]);
-                    }
-                    this._gens.push(newGen);
-                }
-                console.log(this.gens);
-            },
+            this.updateGensOnFulfilled.bind(this),
             (err) => {
                 console.log(err);
             }
         );
     }
 
+    private updateGensOnFulfilled(res: any[]) {
+        this._gens = [];
+        for (let gen of res) {
+            let newGen = new Gen();
+            newGen.id = gen.id;
+            newGen.motherId = gen.motherId;
+            newGen.fatherId = gen.fatherId;
+            for (let informationColumn in gen.information) {
+                newGen.information.push([informationColumn, gen.information[informationColumn]]);
+            }
+            for (let relationsColumn in gen.relations) {
+                newGen.relations.push([relationsColumn, gen.relations[relationsColumn]]);
+            }
+            this._gens.push(newGen);
+        }
+        console.log(this.gens);
+    }
+
     public saveGen(gen: Gen, oldId?: number) {
-        const invokeSave = () => {
-            let informationMap: Map<string, string> = new Map();
-            gen.information.forEach(([key, value]: [string, string]) => informationMap.set(key, value));
-            let relationsMap: Map<string, number[]> = new Map();
-            gen.relations.forEach(([key, value]: [string, number[]]) => relationsMap.set(key, value));
-            invoke<void>('save_gen', { gen: {
+        let informationMap: Map<string, string> = new Map();
+        gen.information.forEach(([key, value]: [string, string]) => informationMap.set(key, value));
+        let relationsMap: Map<string, number[]> = new Map();
+        gen.relations.forEach(([key, value]: [string, number[]]) => relationsMap.set(key, value));
+
+        invoke<void>('save_gen', {
+            gen: {
                 id: gen.id,
                 motherId: gen.motherId,
                 fatherId: gen.fatherId,
                 information: informationMap,
                 relations: relationsMap
-            } }).then(
-                (_) => {
-                    this.updateGens();
-                    this.updateCols();
-                },
-                (err) => {
-                    console.log(err);
-                }
-            )
-        };
-        if (oldId) {
-            invoke<void>('delete_gen', { id: oldId }).finally(() => { invokeSave(); });
-        } else {
-            invokeSave();
-        }
+            },
+            oldId
+        }).then(
+            (_) => {
+                this.updateGens();
+                this.updateCols();
+            },
+            (err) => {
+                console.log(err);
+            }
+        );
     }
 
     public deleteGen(id: number) {
@@ -143,40 +145,36 @@ export class GenService {
 
     public updateTemplates() {
         invoke<any>('templates').then(
-            (res) => {
-                this._templates = [];
-                for (let name in res) {
-                    this._templates.push({ name, properties: res[name] });
-                }
-                console.log(this.templates);
-            },
+            this.updateTemplatesOnFulfilled.bind(this),
             (err) => {
                 console.log(err);
             }
         );
     }
 
-    public saveTemplate(template: Template, oldName?: string) {
-        const invokeSave = () => {
-            invoke<void>('save_template', {
-                name: template.name,
-                properties: [...new Set(template.properties)]
-                    .map((value: string) => value.trim())
-                    .filter((value: string) => value)
-            }).then(
-                (_) => {
-                    this.updateTemplates();
-                },
-                (err) => {
-                    console.log(err);
-                }
-            );
-        };
-        if (oldName) {
-            invoke<void>('delete_template', { name: oldName }).finally(() => { invokeSave(); });
-        } else {
-            invokeSave();
+    private updateTemplatesOnFulfilled(res: any) {
+        this._templates = [];
+        for (let name in res) {
+            this._templates.push({ name, properties: res[name] });
         }
+        console.log(this.templates);
+    }
+
+    public saveTemplate(template: Template, oldName?: string) {
+        invoke<void>('save_template', {
+            name: template.name,
+            properties: [...new Set(template.properties)]
+                .map((value: string) => value.trim())
+                .filter((value: string) => value),
+            oldName
+        }).then(
+            (_) => {
+                this.updateTemplates();
+            },
+            (err) => {
+                console.log(err);
+            }
+        );
     }
 
     public deleteTemplate(name: string) {
@@ -189,9 +187,15 @@ export class GenService {
     }
 
     updateAll() {
-        this.updateCols();
-        this.updateGens();
-        this.updateTemplates();
-
+        forkJoin({
+            cols: invoke<string[]>('cols'),
+            gens: invoke<any[]>('gens'),
+            templates: invoke<any>('templates')
+        }).subscribe(({cols, gens, templates}) => {
+            this.updateColsOnFulfilled(cols);
+            this.updateGensOnFulfilled(gens);
+            this.updateTemplatesOnFulfilled(templates);
+            emit('service-updated');
+        })
     }
 }

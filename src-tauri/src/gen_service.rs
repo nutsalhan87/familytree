@@ -1,5 +1,5 @@
 use std::{
-    collections::BTreeSet,
+    collections::{BTreeSet, HashMap, HashSet},
     fs::{self, File},
     io::BufReader,
     sync::{Arc, Mutex},
@@ -10,10 +10,12 @@ use tauri::{api::dialog::FileDialogBuilder, Window};
 mod gen;
 mod gen_data;
 
-pub use {gen::Gen, gen_data::GenData};
+pub use gen::Gen;
+use gen_data::GenData;
 
 pub struct GenServiceInner {
-    pub gen_data: GenData,
+    gen_data_index: usize,
+    gen_data_history: Vec<GenData>,
     file_path: Option<String>,
 }
 
@@ -21,11 +23,43 @@ pub struct GenService {
     pub inner: Arc<Mutex<GenServiceInner>>,
 }
 
+impl GenServiceInner {
+    pub fn gen_data(&mut self) -> &mut GenData {
+        &mut self.gen_data_history[self.gen_data_index]
+    }
+
+    pub fn next(&mut self) {
+        if self.gen_data_index < self.gen_data_history.len() - 1 {
+            self.gen_data_index += 1;
+        }
+    }
+
+    pub fn prev(&mut self) {
+        if self.gen_data_index > 0 {
+            self.gen_data_index -= 1;
+        }
+    }
+
+    pub fn save_history(&mut self) {
+        self.gen_data_history.truncate(self.gen_data_index + 1);
+        self.gen_data_history
+            .push(self.gen_data_history.last().unwrap().clone());
+        self.gen_data_index += 1;
+    }
+
+    pub fn clear(&mut self) {
+        self.save_history();
+        self.gen_data().clear();
+        self.file_path = None;
+    }
+}
+
 impl GenService {
     pub fn new() -> GenService {
         GenService {
             inner: Arc::new(Mutex::new(GenServiceInner {
-                gen_data: GenData::new(),
+                gen_data_index: 0,
+                gen_data_history: vec![GenData::new()],
                 file_path: None,
             })),
         }
@@ -33,21 +67,64 @@ impl GenService {
 
     pub fn information_columns(&self) -> Vec<String> {
         let mut cols = BTreeSet::new();
-        for gen in self.inner.lock().unwrap().gen_data.gens() {
+        for gen in self.inner.lock().unwrap().gen_data().gens() {
             cols.extend(gen.information().iter().map(|(col, _)| col.clone()));
         }
         cols.into_iter().collect()
     }
 
+    pub fn gens(&self) -> Vec<Gen> {
+        let mut gen_service = self.inner.lock().unwrap();
+        gen_service.gen_data().gens().clone()
+    }
+
+    pub fn save_gen(&self, new_gen: Gen) -> Result<(), String> {
+        let mut gen_service = self.inner.lock().unwrap();
+        gen_service.gen_data().save_gen(new_gen)
+    }
+
+    pub fn delete_gen(&self, id: u32) -> Result<(), String> {
+        let mut gen_service = self.inner.lock().unwrap();
+        gen_service.gen_data().delete_gen(id)
+    }
+
+    pub fn templates(&self) -> HashMap<String, HashSet<String>> {
+        let mut gen_service = self.inner.lock().unwrap();
+        gen_service.gen_data().templates().clone()
+    }
+
+    pub fn save_template(&self, name: &str, properties: HashSet<String>) -> Result<(), String> {
+        let mut gen_service = self.inner.lock().unwrap();
+        gen_service.gen_data().save_template(name, properties)
+    }
+
+    pub fn delete_template(&self, name: &str) -> Result<(), String> {
+        let mut gen_service = self.inner.lock().unwrap();
+        gen_service.gen_data().delete_template(name)
+    }
+
+    pub fn undo(&self) {
+        self.inner.lock().unwrap().prev()
+    }
+
+    pub fn redo(&self) {
+        self.inner.lock().unwrap().next()
+    }
+
+    pub fn save_history(&self) {
+        self.inner.lock().unwrap().save_history()
+    }
+
+    pub fn clear(&self) {
+        self.inner.lock().unwrap().clear()
+    }
+
     pub fn save(&self) {
-        let gen_service = self.inner.lock().unwrap();
+        let mut gen_service = self.inner.lock().unwrap();
+        let gen_data_json = serde_json::ser::to_string_pretty(gen_service.gen_data()).unwrap();
         match &gen_service.file_path {
             Some(file_path) => {
-                fs::write(
-                    file_path,
-                    serde_json::ser::to_string_pretty(&gen_service.gen_data).unwrap(),
-                )
-                .unwrap();
+                fs::write(file_path, gen_data_json).unwrap();
             }
             None => {
                 self.save_as();
@@ -73,7 +150,7 @@ impl GenService {
                         gen_service.file_path = Some(path);
                         fs::write(
                             file_path,
-                            serde_json::ser::to_string_pretty(&gen_service.gen_data).unwrap(),
+                            serde_json::ser::to_string_pretty(&gen_service.gen_data()).unwrap(),
                         )
                         .unwrap();
                     }
@@ -98,7 +175,8 @@ impl GenService {
                     match gen_data {
                         Ok(gen_data) => {
                             let mut gen_service = self_copy.lock().unwrap();
-                            gen_service.gen_data = gen_data;
+                            gen_service.gen_data_index = 0;
+                            gen_service.gen_data_history = vec![gen_data];
                             gen_service.file_path = Some(path);
                             handler();
                         }

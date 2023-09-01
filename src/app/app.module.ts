@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { RelationalComponent } from './relational/relational.component';
-import { GraphComponent } from './graph/graph.component';
+import { GraphComponent, MouseDraggableDirective } from './graph/graph.component';
 import { GenService } from './gen.service';
 import { TemplateManagerComponent } from './curtain-panel/template-manager/template-manager.component';
 import { TemplateEditorComponent } from './curtain-panel/template-manager/template-editor/template-editor.component';
@@ -23,7 +23,8 @@ import { GenInfoComponent } from './curtain-panel/gen-info/gen-info.component';
         TemplatesComponent, 
         CurtainPanelComponent, 
         GenEditorComponent, 
-        GenInfoComponent
+        GenInfoComponent,
+        MouseDraggableDirective
     ],
     bootstrap: [AppComponent],
     providers: [GenService]

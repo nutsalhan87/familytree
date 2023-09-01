@@ -1,16 +1,19 @@
-import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
 import { Gen, GenService } from '../gen.service';
 import { listen } from '@tauri-apps/api/event';
 
 @Component({
     selector: 'relational',
-    templateUrl: 'relational.component.html'
+    templateUrl: 'relational.component.html',
 })
 export class RelationalComponent {
     @Output() edited = new EventEmitter<number>();
     @Output() infoShowed = new EventEmitter<number>();
     constructor(private genService: GenService, private changeDetectorRef: ChangeDetectorRef) {
-        listen('file_opened', (_) => { setTimeout(() => { changeDetectorRef.detectChanges(); }, 100); });
+        setInterval(() => { changeDetectorRef.detectChanges(); }, 100);
+        listen('service-updated', () => {
+            changeDetectorRef.detectChanges();
+        });
     }
 
     get cols() {

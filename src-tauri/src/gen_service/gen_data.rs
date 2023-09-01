@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use super::Gen;
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all(serialize = "camelCase", deserialize = "snake_case"))]
 pub struct GenData {
     gens: Vec<Gen>,
@@ -66,5 +66,10 @@ impl GenData {
     pub fn delete_template(&mut self, name: &str) -> Result<(), String> {
         self.templates.remove(name).ok_or("There is no template with this name")?;
         Ok(())
+    }
+
+    pub fn clear(&mut self) {
+        self.gens = Vec::new();
+        self.templates = HashMap::new();
     }
 }

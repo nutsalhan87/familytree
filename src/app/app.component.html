@@ -17,7 +17,7 @@
         </div>
     </div>
 </nav>
-<div class="mt-3">
+<div>
     <relational [hidden]="!relationalButtonClass.isActive" (edited)="switchGenEditor($event)" (infoShowed)="showGenInfo($event)"/>
     <graph [hidden]="!graphButtonClass.isActive"/>
 </div>
