@@ -1,0 +1,12 @@
+:host {
+    #control {
+      display: flex;
+      align-items: center;
+      column-gap: 5px;
+      margin: 15px;
+    }
+  
+    #content {
+      width: 100%;
+    }
+  }

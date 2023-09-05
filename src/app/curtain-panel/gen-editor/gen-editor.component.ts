@@ -11,7 +11,8 @@ interface GenForEditor {
 
 @Component({
     selector: 'gen-editor',
-    templateUrl: 'gen-editor.component.html'
+    templateUrl: 'gen-editor.component.html',
+    styleUrls: ['gen-editor.component.scss']
 })
 export class GenEditorComponent implements OnInit {
     @Input() id: number | undefined;

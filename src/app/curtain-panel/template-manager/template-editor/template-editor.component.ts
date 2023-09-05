@@ -3,7 +3,8 @@ import { Template } from "src/app/gen.service";
 
 @Component({
     selector: 'template-editor',
-    templateUrl: 'template-editor.component.html'
+    templateUrl: 'template-editor.component.html',
+    styleUrls: ['template-editor.component.scss']
 })
 export class TemplateEditorComponent implements OnInit {
     @Input() oldName: string | undefined;

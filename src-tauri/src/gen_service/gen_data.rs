@@ -69,7 +69,7 @@ impl GenData {
     }
 
     pub fn clear(&mut self) {
-        self.gens = Vec::new();
+        self.gens.clear();
         self.templates = HashMap::new();
     }
 }

@@ -3,7 +3,8 @@ import { Gen, GenService } from "src/app/gen.service";
 
 @Component({
     selector: 'gen-info',
-    templateUrl: 'gen-info.component.html'
+    templateUrl: 'gen-info.component.html',
+    styleUrls: ['gen-info.component.scss']
 })
 export class GenInfoComponent implements OnInit {
     @Input() id: number | undefined;

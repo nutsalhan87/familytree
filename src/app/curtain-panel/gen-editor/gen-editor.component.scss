@@ -1,0 +1,37 @@
+@import '/src/util.scss';
+
+:host {
+  display: grid;
+  row-gap: 10px;
+  padding: 15px;
+  overflow-y: scroll;
+  max-height: 100%;
+  @include hide-scroll();
+
+  #id-input {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 10px;
+  }
+
+  #gen-information {
+    display: flex;
+    align-items: center;
+    column-gap: 5px;
+    margin-top: 15px;
+  }
+
+  #gen-relations {
+    display: flex;
+    align-items: center;
+    column-gap: 15px;
+    margin-top: 15px;
+  }
+
+  #gen-decision-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 10px;
+    margin-top: 15px;
+  }
+}

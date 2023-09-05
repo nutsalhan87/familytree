@@ -1,0 +1,8 @@
+@import '/src/util.scss';
+
+:host {
+    height: 100%;
+    display: block;
+    overflow-y: scroll;
+    @include hide-scroll();
+}

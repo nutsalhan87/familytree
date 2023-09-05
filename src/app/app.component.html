@@ -1,24 +1,33 @@
-<nav class="navbar navbar-expand sticky-top shadow bg-body">
+<nav #navbar class="navbar navbar-expand sticky-top shadow bg-body">
     <div class="container-fluid">
-        <span id="familytree">FamilyTree</span>
+        <a class="navbar-brand">
+            <icon-svg [sideSize]="'2em'"/>
+            FamilyTree
+        </a>
         <div class="navbar-nav mx-3 column-gap-2">
             <div class="nav-item">
-                <button class="btn text-nowrap" [class]="relationalButtonClass.btnClass" (click)="navigateRelational()">Таблица</button>
+                <button class="btn text-nowrap" [class]="relationalButtonClass.btnClass"
+                    (click)="navigateRelational()">Таблица</button>
             </div>
             <div class="nav-item">
-                <button class="btn text-nowrap" [class]="graphButtonClass.btnClass" (click)="navigateGraph()">Граф</button>
+                <button class="btn text-nowrap" [class]="graphButtonClass.btnClass"
+                    (click)="navigateGraph()">Граф</button>
             </div>
             <div class="nav-item">
-                <button class="btn text-nowrap" [class]="templateManagerButtonClass.btnClass" (click)="switchTemplateManager()">Шаблоны</button>
+                <button class="btn text-nowrap" [class]="templateManagerButtonClass.btnClass"
+                    (click)="switchTemplateManager()">Шаблоны</button>
             </div>
             <div class="nav-item">
-                <button class="btn text-nowrap" [class]="genEditorButtonClass.btnClass" (click)="switchGenEditor()">Добавить ветвь</button>
+                <button class="btn text-nowrap" [class]="genEditorButtonClass.btnClass"
+                    (click)="switchGenEditor()">Добавить ветвь</button>
             </div>
         </div>
     </div>
 </nav>
 <div>
-    <relational [hidden]="!relationalButtonClass.isActive" (edited)="switchGenEditor($event)" (infoShowed)="showGenInfo($event)"/>
-    <graph [hidden]="!graphButtonClass.isActive"/>
+    <relational [hidden]="!relationalButtonClass.isActive" (edited)="switchGenEditor($event)"
+        (infoShowed)="showGenInfo($event)" />
+    <graph [hidden]="!graphButtonClass.isActive" [style.--t]="navbarHeight" />
 </div>
-<curtain-panel (closed)="closeCurtain()" *ngIf="curtainPanelContent != CurtainPanelContent.NoContent" [content]="curtainPanelContent" [genId]="genId"/>
+<curtain-panel (closed)="closeCurtain()" *ngIf="curtainPanelContent != CurtainPanelContent.NoContent"
+    [content]="curtainPanelContent" [genId]="genId" [style.--t]="navbarHeight" />

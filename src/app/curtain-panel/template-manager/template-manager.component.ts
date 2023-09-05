@@ -3,7 +3,8 @@ import { GenService, Template } from "src/app/gen.service";
 
 @Component({
     selector: 'template-manager',
-    templateUrl: 'template-manager.component.html'
+    templateUrl: 'template-manager.component.html',
+    styleUrls: ['template-manager.component.scss']
 })
 export class TemplateManagerComponent {
     isTemplates: boolean = true;

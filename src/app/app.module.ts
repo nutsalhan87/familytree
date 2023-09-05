@@ -3,7 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { AppComponent } from './app.component';
 import { RelationalComponent } from './relational/relational.component';
-import { GraphComponent, MouseDraggableDirective } from './graph/graph.component';
+import { GraphComponent } from './graph/graph.component';
 import { GenService } from './gen.service';
 import { TemplateManagerComponent } from './curtain-panel/template-manager/template-manager.component';
 import { TemplateEditorComponent } from './curtain-panel/template-manager/template-editor/template-editor.component';
@@ -11,6 +11,8 @@ import { TemplatesComponent } from './curtain-panel/template-manager/templates/t
 import { CurtainPanelComponent } from './curtain-panel/curtain-panel.component';
 import { GenEditorComponent } from './curtain-panel/gen-editor/gen-editor.component';
 import { GenInfoComponent } from './curtain-panel/gen-info/gen-info.component';
+import { MouseDraggableDirective } from './graph/mousedraggable.directive';
+import { IconSvgComponent } from './icon-svg/icon-svg.component';
 
 @NgModule({
     imports: [BrowserModule, FormsModule],
@@ -24,6 +26,7 @@ import { GenInfoComponent } from './curtain-panel/gen-info/gen-info.component';
         CurtainPanelComponent, 
         GenEditorComponent, 
         GenInfoComponent,
+        IconSvgComponent,
         MouseDraggableDirective
     ],
     bootstrap: [AppComponent],
