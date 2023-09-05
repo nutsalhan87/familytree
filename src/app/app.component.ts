@@ -1,12 +1,13 @@
-import { Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ButtonClassPrimary, ButtonClassSuccess } from './util/button-class';
 import { CurtainPanelContent } from './curtain-panel/curtain-panel.component';
 
 @Component({
     selector: 'app',
-    templateUrl: 'app.component.html'
+    templateUrl: 'app.component.html',
+    styleUrls: ['app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
     readonly CurtainPanelContent = CurtainPanelContent;
     genEditorButtonClass = new ButtonClassSuccess(false);
     templateManagerButtonClass = new ButtonClassSuccess(false);
@@ -14,8 +15,13 @@ export class AppComponent {
     graphButtonClass = new ButtonClassPrimary(false);
     curtainPanelContent = CurtainPanelContent.NoContent;
     genId: number | undefined;
-
+    @ViewChild('navbar') navbar!: ElementRef<HTMLElement>;
+    navbarHeight!: string;
     constructor() {}
+
+    ngAfterViewInit() {
+        this.navbarHeight = this.navbar.nativeElement.offsetHeight.toString().concat('px');
+    }
 
     closeCurtain() {
         this.curtainPanelContent = CurtainPanelContent.NoContent;

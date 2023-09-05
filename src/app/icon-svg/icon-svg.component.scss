@@ -1,0 +1,11 @@
+:host {
+    height: 1em;
+
+    path, circle {
+        stroke: var(--bs-body-color);
+    }
+
+    circle {
+        fill: var(--bs-body-color);
+    }
+}

@@ -11,6 +11,8 @@ import { TemplatesComponent } from './curtain-panel/template-manager/templates/t
 import { CurtainPanelComponent } from './curtain-panel/curtain-panel.component';
 import { GenEditorComponent } from './curtain-panel/gen-editor/gen-editor.component';
 import { GenInfoComponent } from './curtain-panel/gen-info/gen-info.component';
+import { MouseDraggableDirective } from './graph/mousedraggable.directive';
+import { IconSvgComponent } from './icon-svg/icon-svg.component';
 
 @NgModule({
     imports: [BrowserModule, FormsModule],
@@ -23,7 +25,9 @@ import { GenInfoComponent } from './curtain-panel/gen-info/gen-info.component';
         TemplatesComponent, 
         CurtainPanelComponent, 
         GenEditorComponent, 
-        GenInfoComponent
+        GenInfoComponent,
+        IconSvgComponent,
+        MouseDraggableDirective
     ],
     bootstrap: [AppComponent],
     providers: [GenService]

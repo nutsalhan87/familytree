@@ -1,168 +1,44 @@
+@use 'sass:string';
+
 $enable-shadows: true;
 $color-mode-type: media-query;
 $accordion-button-focus-box-shadow: none;
 @import '/node_modules/bootstrap/scss/bootstrap.scss';
+@import './util.scss';
 
 @font-face {
   font-family: 'Montserrat';
   src: url(./assets/montserrat.ttf);
 }
 
-@mixin hide-scroll {
-  // &::-webkit-scrollbar {
-  //   display: none;
-  // }
-  // -ms-overflow-style: none;
-  // scrollbar-width: none;
-}
-
-#familytree {
-  font-size: x-large;
-  padding-left: 0.5em;
-  padding-right: 0.5em;
-}
-
-.navbar-nav {
-  overflow-x: scroll;
-  @include hide-scroll();
-}
-
 body {
   font-family: 'Montserrat';
 }
 
-curtain-panel {
-  position: fixed;
-  top: 0;
+@mixin caret {
+  padding-left: 1rem;
+  display: inline-block;
+  content: "";
+  vertical-align: -.125em;
+  background-repeat: no-repeat;
+  background-size: 1rem 1rem;
+  background-position: bottom .3rem left 0;
+}
 
-  #curtain {
-    position: fixed;
-    width: 100vw;
-    height: 100vh;
-    background-color: #00000060;
-  }
+.caret-up {
+  @include caret();
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/></svg>');
 
-  #panel {
-    --w: 800px;
-    --h: 600px;
-    position: fixed;
-    left: calc(50vw - var(--w) / 2);
-    top: calc(50vh - var(--h) / 2);
-    width: var(--w);
-    height: var(--h);
-    border-radius: 15px;
-
-    @media screen and (max-width: 800px), (max-height: 720px) {
-      --t: 52px;
-      left: 0;
-      top: var(--t);
-      width: 100%;
-      height: calc(100% - var(--t));
-      border-radius: 0;
-    }
+  @media (prefers-color-scheme: dark) {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color-dark}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/></svg>');
   }
 }
 
-templates {
+.caret-down {
+  @include caret();
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>');
 
-  #control {
-    display: flex;
-    align-items: center;
-    column-gap: 5px;
-    margin: 15px;
+  @media (prefers-color-scheme: dark) {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color-dark}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>');
   }
-
-  #content {
-    width: 100%;
-    height: 100%;
-    overflow-y: scroll;
-  }
-}
-
-template-editor {
-  display: grid;
-  row-gap: 10px;
-  padding: 15px;
-  overflow-y: scroll;
-  max-height: 100%;
-
-  #template-decision-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 10px;
-  }
-}
-
-gen-editor {
-  display: grid;
-  row-gap: 10px;
-  padding: 15px;
-  overflow-y: scroll;
-  max-height: 100%;
-
-  #id-input {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    column-gap: 10px;
-  }
-
-  #gen-information {
-    display: flex;
-    align-items: center;
-    column-gap: 5px;
-    margin-top: 15px;
-  }
-
-  #gen-relations {
-    display: flex;
-    align-items: center;
-    column-gap: 15px;
-    margin-top: 15px;
-  }
-
-  #gen-decision-panel {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 10px;
-    margin-top: 15px;
-  }
-}
-
-gen-info {
-  display: grid;
-  row-gap: 30px;
-  padding: 15px;
-  overflow-y: scroll;
-  max-height: 100%;
-
-  #id-info {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  #info-information {
-    display: grid;
-  }
-
-  #info-relations {
-    display: grid;
-  }
-}
-
-relational {
-  user-select: none;
-
-  td, th {
-    max-width: 20vw;
-    overflow-x: scroll;
-    @include hide-scroll();
-  }
-
-  tr :first-child {
-    overflow-x: visible;
-  }
-}
-
-graph {
-  display: block;
 }

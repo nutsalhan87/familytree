@@ -3,7 +3,8 @@ import { GenService, Template } from "src/app/gen.service";
 
 @Component({
     selector: 'templates',
-    templateUrl: 'templates.component.html'
+    templateUrl: 'templates.component.html',
+    styleUrls: ['templates.component.scss']
 })
 export class TemplatesComponent {
     @Output() edited: EventEmitter<string> = new EventEmitter<string>();

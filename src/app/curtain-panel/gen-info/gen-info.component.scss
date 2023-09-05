@@ -1,0 +1,23 @@
+@import '/src/util.scss';
+
+:host {
+    display: grid;
+    row-gap: 30px;
+    padding: 15px;
+    overflow-y: scroll;
+    max-height: 100%;
+    @include hide-scroll();
+  
+    #id-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+  
+    #info-information {
+      display: grid;
+    }
+  
+    #info-relations {
+      display: grid;
+    }
+  }

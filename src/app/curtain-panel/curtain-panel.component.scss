@@ -1,0 +1,31 @@
+:host {
+    position: fixed;
+    top: 0;
+
+    #curtain {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        background-color: #00000060;
+    }
+
+    #panel {
+        --w: 800px;
+        --h: 600px;
+        position: fixed;
+        left: calc(50vw - var(--w) / 2);
+        top: calc(50vh - var(--h) / 2);
+        width: var(--w);
+        height: var(--h);
+        border-radius: 15px;
+
+        @media screen and (max-width: 800px),
+        (max-height: 720px) {
+            left: 0;
+            top: var(--t);
+            width: 100%;
+            height: calc(100% - var(--t));
+            border-radius: 0;
+        }
+    }
+}

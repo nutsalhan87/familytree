@@ -2,10 +2,22 @@
     <table class="table table-striped text-nowrap">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>ID Матери</th>
-                <th>ID Отца</th>
-                <th *ngFor="let col of cols">{{ col }}</th>
+                <th (click)="sortBy(ID_NAME)">
+                    <div [class.caret-up]="sorting[0] == ID_NAME && sorting[1] == 'des'"
+                        [class.caret-down]="sorting[0] == ID_NAME && sorting[1] == 'as'">{{ ID_NAME }}</div>
+                </th>
+                <th (click)="sortBy(MOTHER_ID_NAME)">
+                    <div [class.caret-up]="sorting[0] == MOTHER_ID_NAME && sorting[1] == 'des'"
+                        [class.caret-down]="sorting[0] == MOTHER_ID_NAME && sorting[1] == 'as'">{{ MOTHER_ID_NAME }}</div>
+                </th>
+                <th (click)="sortBy(FATHER_ID_NAME)">
+                    <div [class.caret-up]="sorting[0] == FATHER_ID_NAME && sorting[1] == 'des'"
+                        [class.caret-down]="sorting[0] == FATHER_ID_NAME && sorting[1] == 'as'">{{ FATHER_ID_NAME }}</div>
+                </th>
+                <th *ngFor="let col of cols" (click)="sortBy(col)">
+                    <div [class.caret-up]="sorting[0] == col && sorting[1] == 'des'"
+                        [class.caret-down]="sorting[0] == col && sorting[1] == 'as'">{{ col }}</div>
+                </th>
             </tr>
         </thead>
         <tbody>
