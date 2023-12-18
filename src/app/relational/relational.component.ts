@@ -1,52 +1,46 @@
-import { ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
 import { Gen, GenService } from '../gen.service';
-import { listen } from '@tauri-apps/api/event';
+import { IconNamesEnum } from 'ngx-bootstrap-icons';
+import { Subscription } from 'rxjs';
+
+export const ID_NAME = "ID";
+export const MOTHER_ID_NAME = "ID Матери";
+export const FATHER_ID_NAME = "ID Отца";
 
 @Component({
     selector: 'relational',
     templateUrl: 'relational.component.html',
     styleUrls: ['relational.component.scss']
 })
-export class RelationalComponent {
-    readonly ID_NAME = "ID";
-    readonly MOTHER_ID_NAME = "ID Матери";
-    readonly FATHER_ID_NAME = "ID Отца";
+export class RelationalComponent implements OnDestroy {
+    readonly ID_NAME = ID_NAME;
+    readonly MOTHER_ID_NAME = MOTHER_ID_NAME;
+    readonly FATHER_ID_NAME = FATHER_ID_NAME;
+    readonly IconNamesEnum = IconNamesEnum;
     sorting: [string, "as" | "des"] = [this.ID_NAME, "as"];
+    cols: string[] = [];
+    gens: Gen[] = [];
+    subscription: Subscription;
     @Output() edited = new EventEmitter<number>();
     @Output() infoShowed = new EventEmitter<number>();
     constructor(private genService: GenService, private changeDetectorRef: ChangeDetectorRef) {
-        setInterval(() => { changeDetectorRef.detectChanges(); }, 100);
-        listen('service-updated', () => {
-            changeDetectorRef.detectChanges();
-        });
+        setInterval(() => { this.changeDetectorRef.detectChanges(); }, 100); // sorry...
+        this.subscription = this.genService.genData.subscribe((genData) => { this.updateData(genData.gens); });
     }
 
-    get cols(): string[] {
-        return this.genService.cols;
+    ngOnDestroy(): void {
+        this.subscription.unsubscribe();
     }
 
-    get gens(): Gen[] {
-        const sortedCoef = this.sorting[1] == "as" ? 1 : -1; 
-        let gensSorted: Gen[] = [...this.genService.gens];
-        if (this.sorting[0] == this.ID_NAME) {
-            gensSorted.sort((a: Gen, b: Gen) => (a.id - b.id) * sortedCoef);
-        } else if (this.sorting[0] == this.MOTHER_ID_NAME) {
-            gensSorted.sort((a: Gen, b: Gen) => 
-                this.compareWithUndefinedMore(a.motherId, b.motherId, (a, b) => (a - b) * sortedCoef)
-            );
-        } else if (this.sorting[0] == this.FATHER_ID_NAME) {
-            gensSorted.sort((a: Gen, b: Gen) => 
-                this.compareWithUndefinedMore(a.fatherId, b.fatherId, (a, b) => (a - b) * sortedCoef)
-            );
-        } else {
-            gensSorted.sort((a: Gen, b: Gen) => {
-                let aInfo = a.findInformation(this.sorting[0]);
-                let bInfo = b.findInformation(this.sorting[0]);
-                return this.compareWithUndefinedMore(aInfo, bInfo, (a, b) => a.localeCompare(b) * sortedCoef);
-            })
+    updateData(gens: Gen[]) {
+        this.gens = [...gens];
+        this.resortGens();
+        this.cols = [];
+        for (let gen of this.gens) {
+            this.cols.push(...gen.information.map(([col, _]) => col));
         }
-
-        return gensSorted;
+        this.cols = [...new Set(this.cols)];
+        this.cols.sort();
     }
 
     compareWithUndefinedMore(a: any, b: any, f: (a: any, b: any) => number ) {
@@ -82,6 +76,28 @@ export class RelationalComponent {
             }
         } else {
             this.sorting = [col, "as"];
+        }
+        this.resortGens();
+    }
+
+    resortGens() {
+        const sortedCoef = this.sorting[1] == "as" ? 1 : -1; 
+        if (this.sorting[0] == this.ID_NAME) {
+            this.gens.sort((a: Gen, b: Gen) => (a.id - b.id) * sortedCoef);
+        } else if (this.sorting[0] == this.MOTHER_ID_NAME) {
+            this.gens.sort((a: Gen, b: Gen) => 
+                this.compareWithUndefinedMore(a.motherId, b.motherId, (a, b) => (a - b) * sortedCoef)
+            );
+        } else if (this.sorting[0] == this.FATHER_ID_NAME) {
+            this.gens.sort((a: Gen, b: Gen) => 
+                this.compareWithUndefinedMore(a.fatherId, b.fatherId, (a, b) => (a - b) * sortedCoef)
+            );
+        } else {
+            this.gens.sort((a: Gen, b: Gen) => {
+                let aInfo = a.findInformation(this.sorting[0]);
+                let bInfo = b.findInformation(this.sorting[0]);
+                return this.compareWithUndefinedMore(aInfo, bInfo, (a, b) => a.localeCompare(b) * sortedCoef);
+            })
         }
     }
 }

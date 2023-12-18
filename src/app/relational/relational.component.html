@@ -3,20 +3,24 @@
         <thead>
             <tr>
                 <th (click)="sortBy(ID_NAME)">
-                    <div [class.caret-up]="sorting[0] == ID_NAME && sorting[1] == 'des'"
-                        [class.caret-down]="sorting[0] == ID_NAME && sorting[1] == 'as'">{{ ID_NAME }}</div>
+                    <i-bs [hidden]="sorting[0] != ID_NAME"
+                        [name]="sorting[1] == 'des' ? IconNamesEnum.CaretUpFill : IconNamesEnum.CaretDownFill"></i-bs>
+                    <span>{{ ID_NAME }}</span>
                 </th>
                 <th (click)="sortBy(MOTHER_ID_NAME)">
-                    <div [class.caret-up]="sorting[0] == MOTHER_ID_NAME && sorting[1] == 'des'"
-                        [class.caret-down]="sorting[0] == MOTHER_ID_NAME && sorting[1] == 'as'">{{ MOTHER_ID_NAME }}</div>
+                    <i-bs [hidden]="sorting[0] != MOTHER_ID_NAME"
+                        [name]="sorting[1] == 'des' ? IconNamesEnum.CaretUpFill : IconNamesEnum.CaretDownFill"></i-bs>
+                    <span>{{ MOTHER_ID_NAME }}</span>
                 </th>
                 <th (click)="sortBy(FATHER_ID_NAME)">
-                    <div [class.caret-up]="sorting[0] == FATHER_ID_NAME && sorting[1] == 'des'"
-                        [class.caret-down]="sorting[0] == FATHER_ID_NAME && sorting[1] == 'as'">{{ FATHER_ID_NAME }}</div>
+                    <i-bs [hidden]="sorting[0] != FATHER_ID_NAME"
+                        [name]="sorting[1] == 'des' ? IconNamesEnum.CaretUpFill : IconNamesEnum.CaretDownFill"></i-bs>
+                    <span>{{ FATHER_ID_NAME }}</span>
                 </th>
                 <th *ngFor="let col of cols" (click)="sortBy(col)">
-                    <div [class.caret-up]="sorting[0] == col && sorting[1] == 'des'"
-                        [class.caret-down]="sorting[0] == col && sorting[1] == 'as'">{{ col }}</div>
+                    <i-bs [hidden]="sorting[0] != col"
+                        [name]="sorting[1] == 'des' ? IconNamesEnum.CaretUpFill : IconNamesEnum.CaretDownFill"></i-bs>
+                    <span>{{ col }}</span>
                 </th>
             </tr>
         </thead>

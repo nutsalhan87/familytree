@@ -1,4 +1,5 @@
 @use 'sass:string';
+@use "/node_modules/ngx-float-ui/scss/theme.scss" as floatUiBaseTheme;
 
 $enable-shadows: true;
 $color-mode-type: media-query;
@@ -13,32 +14,13 @@ $accordion-button-focus-box-shadow: none;
 
 body {
   font-family: 'Montserrat';
-}
-
-@mixin caret {
-  padding-left: 1rem;
-  display: inline-block;
-  content: "";
-  vertical-align: -.125em;
-  background-repeat: no-repeat;
-  background-size: 1rem 1rem;
-  background-position: bottom .3rem left 0;
-}
-
-.caret-up {
-  @include caret();
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/></svg>');
+  @include floatUiBaseTheme.ngx-float-ui-theme($body-bg, $body-color, 300px);
 
   @media (prefers-color-scheme: dark) {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color-dark}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="m7.247 4.86-4.796 5.481c-.566.647-.106 1.659.753 1.659h9.592a1 1 0 0 0 .753-1.659l-4.796-5.48a1 1 0 0 0-1.506 0z"/></svg>');
+    @include floatUiBaseTheme.ngx-float-ui-theme($body-bg-dark, $body-color-dark, 300px);
   }
 }
 
-.caret-down {
-  @include caret();
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>');
-
-  @media (prefers-color-scheme: dark) {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%23#{string.slice(#{$body-color-dark}, 2)}" width="16" height="16" viewBox="0 0 16 16"><path d="M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>');
-  }
+.h5 {
+  margin-bottom: 0;
 }

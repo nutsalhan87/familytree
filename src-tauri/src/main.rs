@@ -3,10 +3,43 @@
 
 mod gen_service;
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use gen_service::*;
-use tauri::{CustomMenuItem, Manager, Menu, MenuItem, State, Submenu};
+use tauri::{CustomMenuItem, Manager, Menu, MenuItem, State, Submenu, Window};
+
+enum HotKey {
+    CtrlN,
+    CtrlO,
+    CtrlS,
+    CtrlShiftS,
+    CtrlZ,
+    CtrlShiftZ
+}
+
+impl Into<String> for HotKey {
+    fn into(self) -> String {
+        if cfg!(macos) {
+            match self {
+                HotKey::CtrlN => "cmd + N".to_string(),
+                HotKey::CtrlO => "cmd + O".to_string(),
+                HotKey::CtrlS => "cmd + S".to_string(),
+                HotKey::CtrlShiftS => "cmd + shift + S".to_string(),
+                HotKey::CtrlZ => "cmd + Z".to_string(),
+                HotKey::CtrlShiftZ => "cmd + shift + Z".to_string(),
+            }
+        } else {
+            match self {
+                HotKey::CtrlN => "ctrl + N".to_string(),
+                HotKey::CtrlO => "ctrl + O".to_string(),
+                HotKey::CtrlS => "ctrl + S".to_string(),
+                HotKey::CtrlShiftS => "ctrl + shift + S".to_string(),
+                HotKey::CtrlZ => "ctrl + Z".to_string(),
+                HotKey::CtrlShiftZ => "ctrl + shift + Z".to_string(),
+            }
+        }
+    }
+}
 
 #[tauri::command]
 fn message(window: tauri::Window, title: &str, msg: &str) -> Result<(), String> {
@@ -15,53 +48,64 @@ fn message(window: tauri::Window, title: &str, msg: &str) -> Result<(), String> 
 }
 
 #[tauri::command]
-fn cols(gen_serv: State<GenService>) -> Result<Vec<String>, String> {
-    Ok(gen_serv.information_columns())
-}
-
-#[tauri::command]
-fn gens(gen_serv: State<GenService>) -> Result<Vec<Gen>, String> {
-    Ok(gen_serv.gens())
-}
-
-#[tauri::command]
-fn save_gen(gen_serv: State<GenService>, gen: Gen, old_id: Option<u32>) -> Result<(), String> {
+fn save_gen(
+    gen_serv: State<GenService>,
+    window: Window,
+    gen: Gen,
+    old_id: Option<u32>,
+) -> Result<(), String> {
     gen_serv.save_history();
     if let Some(old_id) = old_id {
-        gen_serv.delete_gen(old_id);
+        let _ = gen_serv.delete_gen(old_id);
     }
-    gen_serv.save_gen(gen)
+    gen_serv.save_gen(gen)?;
+    window
+        .emit("gendata-updated", gen_serv.gen_data_clone())
+        .unwrap();
+    Ok(())
 }
 
 #[tauri::command]
-fn delete_gen(gen_serv: State<GenService>, id: u32) -> Result<(), String> {
+fn delete_gen(gen_serv: State<GenService>, window: Window, id: u32) -> Result<(), String> {
     gen_serv.save_history();
-    gen_serv.delete_gen(id)
-}
-
-#[tauri::command]
-fn templates(gen_serv: State<GenService>) -> Result<HashMap<String, HashSet<String>>, String> {
-    Ok(gen_serv.templates())
+    gen_serv.delete_gen(id)?;
+    window
+        .emit("gendata-updated", gen_serv.gen_data_clone())
+        .unwrap();
+    Ok(())
 }
 
 #[tauri::command]
 fn save_template(
     gen_serv: State<GenService>,
+    window: Window,
     name: String,
     properties: HashSet<String>,
-    old_name: Option<String>
+    old_name: Option<String>,
 ) -> Result<(), String> {
     gen_serv.save_history();
     if let Some(old_name) = old_name {
-        gen_serv.delete_template(&old_name);
+        let _ = gen_serv.delete_template(&old_name);
     }
-    gen_serv.save_template(&name, properties)
+    gen_serv.save_template(&name, properties)?;
+    window
+        .emit("gendata-updated", gen_serv.gen_data_clone())
+        .unwrap();
+    Ok(())
 }
 
 #[tauri::command]
-fn delete_template(gen_serv: State<GenService>, name: String) -> Result<(), String> {
+fn delete_template(
+    gen_serv: State<GenService>,
+    window: Window,
+    name: String,
+) -> Result<(), String> {
     gen_serv.save_history();
-    gen_serv.delete_template(&name)
+    gen_serv.delete_template(&name)?;
+    window
+        .emit("gendata-updated", gen_serv.gen_data_clone())
+        .unwrap();
+    Ok(())
 }
 
 fn main() {
@@ -69,23 +113,20 @@ fn main() {
         .manage(GenService::new())
         .invoke_handler(tauri::generate_handler![
             message,
-            cols,
-            gens,
             save_gen,
             delete_gen,
-            templates,
             save_template,
             delete_template
         ])
         .menu({
             let menu = Menu::new();
 
-            let new = CustomMenuItem::new("new", "Новый").accelerator("ctrl + N");
-            let open = CustomMenuItem::new("open", "Открыть").accelerator("ctrl + O");
+            let new = CustomMenuItem::new("new", "Новый").accelerator(HotKey::CtrlN);
+            let open = CustomMenuItem::new("open", "Открыть").accelerator(HotKey::CtrlO);
             let sep = MenuItem::Separator;
-            let save = CustomMenuItem::new("save", "Сохранить").accelerator("ctrl + S");
+            let save = CustomMenuItem::new("save", "Сохранить").accelerator(HotKey::CtrlS);
             let save_as =
-                CustomMenuItem::new("save_as", "Сохранить как...").accelerator("ctrl + shift + S");
+                CustomMenuItem::new("save_as", "Сохранить как...").accelerator(HotKey::CtrlShiftS);
             let file_menu = Submenu::new(
                 "Файл",
                 Menu::new()
@@ -97,9 +138,9 @@ fn main() {
                     .add_item(save_as),
             );
 
-            let undo = CustomMenuItem::new("undo", "Назад").accelerator("ctrl + Z");
-            let redo = CustomMenuItem::new("redo", "Вперед").accelerator("ctrl + shift + Z");
-            let step_menu = Submenu::new("Данные", Menu::new().add_item(undo).add_item(redo));
+            let undo = CustomMenuItem::new("undo", "Назад").accelerator(HotKey::CtrlZ);
+            let redo = CustomMenuItem::new("redo", "Вперед").accelerator(HotKey::CtrlShiftZ);
+            let step_menu = Submenu::new("Правка", Menu::new().add_item(undo).add_item(redo));
 
             menu.add_submenu(file_menu).add_submenu(step_menu)
         })
@@ -109,11 +150,13 @@ fn main() {
             match event.menu_item_id() {
                 "new" => {
                     gen_serv.clear();
-                    window.emit("gendata-updated", ());
-                },
+                    window
+                        .emit("gendata-updated", gen_serv.gen_data_clone())
+                        .unwrap();
+                }
                 "open" => {
-                    gen_serv.open(move || {
-                        window.emit("gendata-updated", ()).unwrap();
+                    gen_serv.open(move |gen_data| {
+                        window.emit("gendata-updated", gen_data).unwrap();
                     });
                 }
                 "save" => {
@@ -121,14 +164,18 @@ fn main() {
                 }
                 "save_as" => {
                     gen_serv.save_as();
-                },
+                }
                 "redo" => {
                     gen_serv.redo();
-                    window.emit("gendata-updated", ()).unwrap();
-                },
+                    window
+                        .emit("gendata-updated", gen_serv.gen_data_clone())
+                        .unwrap();
+                }
                 "undo" => {
                     gen_serv.undo();
-                    window.emit("gendata-updated", ()).unwrap();
+                    window
+                        .emit("gendata-updated", gen_serv.gen_data_clone())
+                        .unwrap();
                 }
                 _ => (),
             }

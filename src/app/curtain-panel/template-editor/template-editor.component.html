@@ -1,0 +1,24 @@
+<div [style.margin-bottom.px]="-5">
+    <span class="h5">Название шаблона</span>
+    <i-bs name="info-circle" class="mx-2"
+        [floatUi]="templateNameInfo" [placement]="NgxFloatUiPlacements.RIGHTSTART"
+        [hideOnScroll]="!0"></i-bs>
+</div>
+<input type="text" class="form-control" [class.is-invalid]="!isNameValid" (ngModelChange)="validateName($event)"
+    [(ngModel)]="templateEditData.template.name"/>
+<div class="invalid-feedback" [style.margin-top.px]="-10">Введите название шаблона</div>
+<div [style.margin-bottom.px]="-5">
+    <span class="h5">Свойства</span>
+    <i-bs name="info-circle" class="mx-2"
+        [floatUi]="propertiesInfo" [placement]="NgxFloatUiPlacements.RIGHTSTART"
+        [hideOnScroll]="!0"></i-bs>
+</div>
+<div *ngFor="let property of templateEditData.template.properties; let i = index; trackBy:trackByIndex" class="input-group">
+    <input class="form-control" [(ngModel)]="templateEditData.template.properties[i]" />
+    <button class="btn btn-danger" (click)="removeProperty(i)">Убрать</button>
+</div>
+<button class="btn btn-primary" (click)="addProperty()">Добавить свойство</button>
+<div id="template-decision-panel">
+    <button class="btn btn-outline-danger" (click)="close()">Отмена</button>
+    <button class="btn btn-success" [class.disabled]="!isNameValid" (click)="save()">Сохранить</button>
+</div>
