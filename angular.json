@@ -7,6 +7,12 @@
   },
   "projects": {
     "familytree": {
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss",
+          "skipTests": true
+        }
+      },
       "root": "",
       "projectType": "application",
       "sourceRoot": "src",
@@ -55,10 +61,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "familytree:build:production"
+              "buildTarget": "familytree:build:production"
             },
             "development": {
-              "browserTarget": "familytree:build:development"
+              "buildTarget": "familytree:build:development"
             }
           },
           "defaultConfiguration": "development"

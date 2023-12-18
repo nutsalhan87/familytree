@@ -13,7 +13,7 @@ export class GenInfoComponent implements OnInit {
     constructor(private genService: GenService) {}
 
     ngOnInit(): void {
-        const result = this.genService.gens.find((value: Gen) => value.id == this.id);
+        const result = this.genService.genData.getValue().gens.find((value: Gen) => value.id == this.id);
         if (result) {
             this.gen = result;
         }

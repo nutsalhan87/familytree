@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api';
-import { emit, listen } from '@tauri-apps/api/event';
-import { forkJoin } from 'rxjs';
+import { event } from '@tauri-apps/api';
+import { BehaviorSubject } from 'rxjs';
 
 export class Gen {
     id: number = 0;
@@ -11,7 +11,7 @@ export class Gen {
     constructor() { }
 
     findInformation(findKey: string): string | undefined {
-        const result = this.information.find(([key, value]: [string, string]) => key == findKey);
+        const result = this.information.find(([key, _]: [string, string]) => key == findKey);
         if (result) {
             return result[1];
         } else {
@@ -20,7 +20,7 @@ export class Gen {
     }
 
     findRelations(findKey: string): number[] | undefined {
-        const result = this.relations.find(([key, value]: [string, number[]]) => key == findKey);
+        const result = this.relations.find(([key, _]: [string, number[]]) => key == findKey);
         if (result) {
             return result[1];
         } else {
@@ -34,8 +34,8 @@ export class Template {
     properties: string[] = [];
     constructor() { }
 
-    static findProperties(findKey: string, templates: Template[]): string[] | undefined {
-        const result = templates.find((template: Template) => template.name == findKey);
+    static findProperties(key: string, templates: Template[]): string[] | undefined {
+        const result = templates.find((template: Template) => template.name == key);
         if (result) {
             return result.properties;
         } else {
@@ -44,49 +44,28 @@ export class Template {
     }
 }
 
+interface RawGenData {
+    gens: any[];
+    templates: any[];
+}
+
+export interface GenData {
+    gens: Gen[];
+    templates: Template[];
+}
+
 export class GenService {
-    private _cols: string[] = [];
-    private _gens: Gen[] = [];
-    private _templates: Template[] = [];
+    public genData = new BehaviorSubject<GenData>({
+        gens: [],
+        templates: []
+    });
 
     public constructor() {
-        this.updateAll();
-        listen('gendata-updated', () => { this.updateAll(); })
+        event.listen<RawGenData>('gendata-updated', (rawGenData) => { this.updateService(rawGenData.payload); })
     }
 
-    public get cols(): string[] {
-        return this._cols;
-    }
-
-    public updateCols() {
-        invoke<string[]>('cols').then(
-            this.updateColsOnFulfilled.bind(this),
-            (err) => {
-                console.log(err);
-            }
-        );
-    }
-
-    private updateColsOnFulfilled(res: string[]) {
-        this._cols = res;
-        console.log(this.cols);
-    }
-
-    public get gens(): Gen[] {
-        return this._gens;
-    }
-
-    public updateGens() {
-        invoke<any[]>('gens').then(
-            this.updateGensOnFulfilled.bind(this),
-            (err) => {
-                console.log(err);
-            }
-        );
-    }
-
-    private updateGensOnFulfilled(res: any[]) {
-        this._gens = [];
+    private rawToGens(res: any[]): Gen[] {
+        let gens: Gen[] = [];
         for (let gen of res) {
             let newGen = new Gen();
             newGen.id = gen.id;
@@ -98,9 +77,11 @@ export class GenService {
             for (let relationsColumn in gen.relations) {
                 newGen.relations.push([relationsColumn, gen.relations[relationsColumn]]);
             }
-            this._gens.push(newGen);
+            gens.push(newGen);
         }
-        console.log(this.gens);
+        
+        console.log(gens);
+        return gens;
     }
 
     public saveGen(gen: Gen, oldId?: number) {
@@ -109,7 +90,7 @@ export class GenService {
         let relationsMap: Map<string, number[]> = new Map();
         gen.relations.forEach(([key, value]: [string, number[]]) => relationsMap.set(key, value));
 
-        invoke<void>('save_gen', {
+        invoke('save_gen', {
             gen: {
                 id: gen.id,
                 motherId: gen.motherId,
@@ -118,46 +99,21 @@ export class GenService {
                 relations: relationsMap
             },
             oldId
-        }).then(
-            (_) => {
-                this.updateGens();
-                this.updateCols();
-            },
-            (err) => {
-                console.log(err);
-            }
-        );
+        }).catch((err) => { console.log(err); });
     }
 
     public deleteGen(id: number) {
-        invoke<void>('delete_gen', { id }).then(
-            (_) => {
-                this.updateGens();
-                this.updateCols();
-            },
-            (err) => { console.log(err); }
-        );
+        invoke('delete_gen', { id }).catch((err) => { console.log(err); });
     }
 
-    public get templates(): Template[] {
-        return this._templates;
-    }
-
-    public updateTemplates() {
-        invoke<any>('templates').then(
-            this.updateTemplatesOnFulfilled.bind(this),
-            (err) => {
-                console.log(err);
-            }
-        );
-    }
-
-    private updateTemplatesOnFulfilled(res: any) {
-        this._templates = [];
+    private rawToTemplates(res: any) {
+        let templates: Template[] = [];
         for (let name in res) {
-            this._templates.push({ name, properties: res[name] });
+            templates.push({ name, properties: res[name] });
         }
-        console.log(this.templates);
+
+        console.log(templates);
+        return templates;
     }
 
     public saveTemplate(template: Template, oldName?: string) {
@@ -167,35 +123,17 @@ export class GenService {
                 .map((value: string) => value.trim())
                 .filter((value: string) => value),
             oldName
-        }).then(
-            (_) => {
-                this.updateTemplates();
-            },
-            (err) => {
-                console.log(err);
-            }
-        );
+        }).catch((err) => { console.log(err); });
     }
 
     public deleteTemplate(name: string) {
-        invoke<void>('delete_template', { name }).then(
-            (_) => {
-                this.updateTemplates();
-            },
-            (err) => { console.log(err); }
-        );
+        invoke('delete_template', { name }).catch((err) => { console.log(err); });
     }
 
-    updateAll() {
-        forkJoin({
-            cols: invoke<string[]>('cols'),
-            gens: invoke<any[]>('gens'),
-            templates: invoke<any>('templates')
-        }).subscribe(({cols, gens, templates}) => {
-            this.updateColsOnFulfilled(cols);
-            this.updateGensOnFulfilled(gens);
-            this.updateTemplatesOnFulfilled(templates);
-            emit('service-updated');
-        })
+    private updateService(rawGenData: RawGenData) {
+        let gens = this.rawToGens(rawGenData.gens);
+        let templates = this.rawToTemplates(rawGenData.templates);
+        let genData: GenData = { gens, templates };
+        this.genData.next(genData);
     }
 }

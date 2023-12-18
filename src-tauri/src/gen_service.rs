@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::HashSet,
     fs::{self, File},
     io::BufReader,
     sync::{Arc, Mutex},
@@ -65,17 +65,9 @@ impl GenService {
         }
     }
 
-    pub fn information_columns(&self) -> Vec<String> {
-        let mut cols = BTreeSet::new();
-        for gen in self.inner.lock().unwrap().gen_data().gens() {
-            cols.extend(gen.information().iter().map(|(col, _)| col.clone()));
-        }
-        cols.into_iter().collect()
-    }
-
-    pub fn gens(&self) -> Vec<Gen> {
+    pub fn gen_data_clone(&self) -> GenData {
         let mut gen_service = self.inner.lock().unwrap();
-        gen_service.gen_data().gens().clone()
+        gen_service.gen_data().clone()
     }
 
     pub fn save_gen(&self, new_gen: Gen) -> Result<(), String> {
@@ -86,11 +78,6 @@ impl GenService {
     pub fn delete_gen(&self, id: u32) -> Result<(), String> {
         let mut gen_service = self.inner.lock().unwrap();
         gen_service.gen_data().delete_gen(id)
-    }
-
-    pub fn templates(&self) -> HashMap<String, HashSet<String>> {
-        let mut gen_service = self.inner.lock().unwrap();
-        gen_service.gen_data().templates().clone()
     }
 
     pub fn save_template(&self, name: &str, properties: HashSet<String>) -> Result<(), String> {
@@ -136,8 +123,8 @@ impl GenService {
         let self_copy = Arc::clone(&self.inner);
         FileDialogBuilder::new()
             .add_filter("JSON", &["json"])
-            .save_file(move |file_path| match file_path {
-                Some(file_path) => {
+            .save_file(move |file_path| {
+                if let Some(file_path) = file_path {
                     let path = file_path.to_str().unwrap().to_string();
                     if !path.ends_with(".json") {
                         tauri::api::dialog::message(
@@ -155,19 +142,18 @@ impl GenService {
                         .unwrap();
                     }
                 }
-                None => (),
             });
     }
 
     pub fn open<F>(&self, handler: F)
     where
-        F: FnOnce() + Send + Sync + 'static,
+        F: FnOnce(GenData) + Send + Sync + 'static,
     {
         let self_copy = Arc::clone(&self.inner);
         FileDialogBuilder::new()
             .add_filter("JSON", &["json"])
-            .pick_file(move |file_path| match file_path {
-                Some(file_path) => {
+            .pick_file(move |file_path| {
+                if let Some(file_path) = file_path {
                     let path = file_path.to_str().unwrap().to_string();
                     let gen_data = serde_json::de::from_reader::<_, GenData>(BufReader::new(
                         File::open(&path).unwrap(),
@@ -178,7 +164,7 @@ impl GenService {
                             gen_service.gen_data_index = 0;
                             gen_service.gen_data_history = vec![gen_data];
                             gen_service.file_path = Some(path);
-                            handler();
+                            handler(gen_service.gen_data().clone());
                         }
                         Err(_) => {
                             tauri::api::dialog::message(
@@ -189,7 +175,6 @@ impl GenService {
                         }
                     }
                 }
-                None => (),
             });
     }
 }

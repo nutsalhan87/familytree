@@ -1,42 +1,54 @@
-import { Component } from "@angular/core";
+import { Component, EventEmitter, OnDestroy, Output } from "@angular/core";
 import { GenService, Template } from "src/app/gen.service";
+import { TemplateEditData } from "../template-editor/template-editor.component";
+import { NgxFloatUiPlacements } from "ngx-float-ui";
+import { Subscription } from "rxjs";
 
 @Component({
     selector: 'template-manager',
     templateUrl: 'template-manager.component.html',
     styleUrls: ['template-manager.component.scss']
 })
-export class TemplateManagerComponent {
-    isTemplates: boolean = true;
-    isEditor: boolean = false;
-    template: { name: string, properties: string[] } = { name: "", properties: [] };
-    oldName: string | undefined;
-    constructor(private genService: GenService) {}
+export class TemplateManagerComponent implements OnDestroy {
+    readonly NgxFloatUiPlacements = NgxFloatUiPlacements;
+    readonly templateInfo: string = `Шаблоны позволяют не тратить время на ручной набор названий столбцов, которые вы хотите добавить в информацию о человеке.<br>
+    Например, можно создать шаблон ФИО, который при добавлении создаст столбцы "Фамилия", "Имя" и "Отчество" - вводить вручную их больше не придется.`;
+    templates: Template[] = [];
+    subscription: Subscription;
+    @Output() edited: EventEmitter<TemplateEditData> = new EventEmitter();
+    @Output() closed: EventEmitter<void> = new EventEmitter();
+    constructor(private genService: GenService) {
+        this.subscription = this.genService.genData.subscribe((genData) => { this.templates = [...genData.templates]; });
+    }
 
-    edit(name?: string | undefined) {
-        this.isTemplates = false;
-        this.isEditor = true;
-        if (name) {
-            this.oldName = name;
-            const properties = Template.findProperties(name, this.genService.templates);
-            if (!properties) {
-                this.template = { name: "", properties: [] };
-                return;
-            }
-            this.template = { name, properties: Array.from(properties) };
-        } else {
-            this.oldName = undefined;
-            this.template = { name: "", properties: [] };
+    ngOnDestroy(): void {
+        this.subscription.unsubscribe();
+    }
+
+    newTemplate() {
+        this.edited.emit({ template: { name: "", properties: [] }, oldName: undefined });
+    }
+
+    edit(name: string) {
+        let editData: TemplateEditData = {
+            template: {
+                name,
+                properties: []
+            },
+            oldName: name
+        };
+        const properties = Template.findProperties(name, this.templates);
+        if (properties) {
+            editData.template.properties = [...properties];
         }
+        this.edited.emit(editData);
     }
 
-    cancelEdit() {
-        this.isTemplates = true;
-        this.isEditor = false;
+    delete(name: string) {
+        this.genService.deleteTemplate(name);
     }
 
-    saveEdit(editedTemplate: { template: Template, oldName: string | undefined }) {
-        this.genService.saveTemplate(editedTemplate.template, editedTemplate.oldName);
-        this.cancelEdit();
+    close() {
+        this.closed.emit();
     }
 }

@@ -6,27 +6,32 @@ import { RelationalComponent } from './relational/relational.component';
 import { GraphComponent } from './graph/graph.component';
 import { GenService } from './gen.service';
 import { TemplateManagerComponent } from './curtain-panel/template-manager/template-manager.component';
-import { TemplateEditorComponent } from './curtain-panel/template-manager/template-editor/template-editor.component';
-import { TemplatesComponent } from './curtain-panel/template-manager/templates/templates.component';
+import { TemplateEditorComponent } from './curtain-panel/template-editor/template-editor.component';
 import { CurtainPanelComponent } from './curtain-panel/curtain-panel.component';
 import { GenEditorComponent } from './curtain-panel/gen-editor/gen-editor.component';
 import { GenInfoComponent } from './curtain-panel/gen-info/gen-info.component';
 import { MouseDraggableDirective } from './graph/mousedraggable.directive';
-import { IconSvgComponent } from './icon-svg/icon-svg.component';
+import { LogoSvgComponent } from './logo-svg/logo-svg.component';
+import { NgxBootstrapIconsModule, caretDownFill, caretUpFill, infoCircle } from 'ngx-bootstrap-icons';
+import { NgxFloatUiModule } from 'ngx-float-ui';
 
 @NgModule({
-    imports: [BrowserModule, FormsModule],
+    imports: [
+        BrowserModule,
+        FormsModule,
+        NgxBootstrapIconsModule.pick({ caretDownFill, caretUpFill, infoCircle }),
+        NgxFloatUiModule.forRoot({ positionFixed: true })
+    ],
     declarations: [
         AppComponent,
         RelationalComponent,
         GraphComponent,
-        TemplateManagerComponent, 
-        TemplateEditorComponent, 
-        TemplatesComponent, 
-        CurtainPanelComponent, 
-        GenEditorComponent, 
+        TemplateManagerComponent,
+        TemplateEditorComponent,
+        CurtainPanelComponent,
+        GenEditorComponent,
         GenInfoComponent,
-        IconSvgComponent,
+        LogoSvgComponent,
         MouseDraggableDirective
     ],
     bootstrap: [AppComponent],
