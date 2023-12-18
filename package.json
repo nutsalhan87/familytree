@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build && npx purgecss --css dist/familytree/*.css --content dist/familytree/*.html dist/*.js --output dist/familytree",
+    "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "tauri": "tauri"
   },
