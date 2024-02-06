@@ -11,7 +11,7 @@ mod gen;
 mod gen_data;
 
 pub use gen::Gen;
-use gen_data::GenData;
+pub use gen_data::GenData;
 
 pub struct GenServiceInner {
     gen_data_index: usize,
