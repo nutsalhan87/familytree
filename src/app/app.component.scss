@@ -1,8 +1,0 @@
-@import '/src/util.scss';
-
-:host {
-  .navbar-nav {
-    overflow-x: scroll;
-    @include hide-scroll();
-  }
-}

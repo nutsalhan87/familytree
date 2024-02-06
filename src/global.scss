@@ -1,0 +1,20 @@
+@use 'sass:string';
+
+$enable-shadows: true;
+$color-mode-type: media-query;
+$accordion-button-focus-box-shadow: none;
+@import '/node_modules/bootstrap/scss/bootstrap.scss';
+@import './util.scss';
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url(./assets/montserrat.ttf);
+}
+
+body {
+  font-family: 'Montserrat';
+}
+
+.h5 {
+  margin-bottom: 0;
+}

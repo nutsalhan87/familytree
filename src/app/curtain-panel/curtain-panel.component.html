@@ -1,9 +1,0 @@
-<div id="curtain" (click)="close()"></div>
-<div id="panel" class="shadow bg-body" [ngSwitch]="content">
-    <template-manager *ngSwitchCase="CurtainPanelContent.TemplateManager" (closed)="close()"
-        (edited)="editTemplate($event)"></template-manager>
-    <template-editor *ngSwitchCase="CurtainPanelContent.TemplateEditor" (returned)="openTemplateManager()"
-        [templateEditData]="templateEditData"></template-editor>
-    <gen-editor *ngSwitchCase="CurtainPanelContent.GenEditor" (cancelled)="close()" [id]="genId"></gen-editor>
-    <gen-info *ngSwitchCase="CurtainPanelContent.GenInfo" (closed)="close()" [id]="genId"></gen-info>
-</div>

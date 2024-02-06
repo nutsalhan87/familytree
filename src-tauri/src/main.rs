@@ -48,6 +48,11 @@ fn message(window: tauri::Window, title: &str, msg: &str) -> Result<(), String> 
 }
 
 #[tauri::command]
+fn gen_data(gen_serv: State<GenService>) -> Result<GenData, String> {
+    Ok(gen_serv.gen_data_clone())
+}
+
+#[tauri::command]
 fn save_gen(
     gen_serv: State<GenService>,
     window: Window,
@@ -113,6 +118,7 @@ fn main() {
         .manage(GenService::new())
         .invoke_handler(tauri::generate_handler![
             message,
+            gen_data,
             save_gen,
             delete_gen,
             save_template,
